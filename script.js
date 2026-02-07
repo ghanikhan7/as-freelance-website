@@ -1,6 +1,22 @@
 // Smooth scroll animations on page load
 document.addEventListener('DOMContentLoaded', function () {
 
+    // Parallax effect for hero section
+    let ticking = false;
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            window.requestAnimationFrame(function () {
+                const scrolled = window.pageYOffset;
+                const heroContent = document.querySelector('.hero-content');
+                if (heroContent && scrolled < window.innerHeight) {
+                    heroContent.style.transform = `translateY(${scrolled * 0.3}px)`;
+                    heroContent.style.opacity = 1 - (scrolled / window.innerHeight) * 0.8;
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
     // Header scroll behavior
     const header = document.getElementById('header');
     let lastScroll = 0;
@@ -37,30 +53,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add scroll animation observer
     const observerOptions = {
-        threshold: 0.2,
-        rootMargin: '0px 0px -100px 0px'
+        threshold: 0.15,
+        rootMargin: '0px 0px -50px 0px'
     };
 
-    const observer = new IntersectionObserver(function (entries) {
+    const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
+                // Only observe once for performance
+                observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
 
-    // Observe all sections except hero
-    const sections = document.querySelectorAll('.section');
-    sections.forEach(section => {
-        section.classList.add('scroll-fade');
-        observer.observe(section);
-    });
+    // Observe all animated elements
+    const animatedElements = document.querySelectorAll(
+        '.scroll-fade, .scroll-fade-up, .section-title, .service-card, .process-step, .portfolio-item, .why-card, .about-text'
+    );
 
-    // Smooth scroll for anchor links
+    animatedElements.forEach(el => observer.observe(el));
+
+    // Add smooth scroll behavior
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
-            if (href !== '#' && href.length > 1) {
+            if (href !== '#') {
                 e.preventDefault();
                 const target = document.querySelector(href);
                 if (target) {
@@ -97,26 +115,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Parallax effect for hero orbs
-    let ticking = false;
-
-    window.addEventListener('scroll', function () {
-        if (!ticking) {
-            window.requestAnimationFrame(function () {
-                const scrolled = window.pageYOffset;
-                const orbs = document.querySelectorAll('.gradient-orb');
-
-                orbs.forEach((orb, index) => {
-                    const speed = 0.3 + (index * 0.1);
-                    orb.style.transform = `translateY(${scrolled * speed}px)`;
-                });
-
-                ticking = false;
-            });
-
-            ticking = true;
-        }
-    });
 
     // Add stagger animation to problem cards
     const problemCards = document.querySelectorAll('.problem-card');
